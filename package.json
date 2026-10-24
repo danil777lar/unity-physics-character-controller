@@ -1,0 +1,26 @@
+{
+  "name": "com.larje.character",
+  "version": "0.1.0",
+  "displayName": "Larje Character",
+  "description": "Physics-based character controller with abilities (walk, run, jump, crouch, dash, wall run, ledge climb, knockback, ragdoll), health and damage, usable items and guns, state-machine AI brains, FPS camera and cursor service.",
+  "unity": "6000.3",
+  "author": {
+    "name": "Danil Kolbasenko",
+    "email": "danil777lar@gmail.com",
+    "url": "https://github.com/danil777lar"
+  },
+  "dependencies": {
+    "com.larje.core": "0.1.0",
+    "com.unity.inputsystem": "1.11.0",
+    "com.unity.modules.ai": "1.0.0",
+    "com.unity.modules.physics": "1.0.0",
+    "com.unity.cinemachine": "3.1.0"
+  },
+  "keywords": [
+    "larje",
+    "character",
+    "controller",
+    "ai",
+    "fps"
+  ]
+}

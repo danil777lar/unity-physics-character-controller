@@ -1,0 +1,24 @@
+{
+    "name": "Larje.Character.Zenject",
+    "rootNamespace": "Larje.Character.Zenject",
+    "references": [
+        "Larje.Core",
+        "Larje.Character",
+        "Zenject"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": ["LARJE_ZENJECT"],
+    "versionDefines": [
+        {
+            "name": "com.larje.extenject",
+            "expression": "9.0.0",
+            "define": "LARJE_ZENJECT"
+        }
+    ],
+    "noEngineReferences": false
+}

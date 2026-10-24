@@ -1,0 +1,17 @@
+{
+    "name": "Larje.Character.Editor",
+    "rootNamespace": "Larje.Character.Editor",
+    "references": [
+        "Larje.Core",
+        "Larje.Character"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
