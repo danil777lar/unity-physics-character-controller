@@ -21,11 +21,13 @@ namespace Larje.Character.AI
                     return;
                 }
 
+#if LARJE_ADDRESSABLES
                 if (!string.IsNullOrEmpty(brainKey))
                 {
                     brainLoader.SetBrain(brainKey);
                     return;
                 }
+#endif
             }
         }
 

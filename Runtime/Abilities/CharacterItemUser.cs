@@ -44,10 +44,12 @@ namespace Larje.Character
         public void InjectData(object data)
         {
             _data = (Data)data;
+#if LARJE_ADDRESSABLES
             if (!string.IsNullOrEmpty(_data?.currentItemKey))
             {
                 SetItem(_data.currentItemKey);
             }
+#endif
         }
 
         public object ReadData()
