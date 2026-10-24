@@ -20,7 +20,7 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.larje.extenject",
+            "name": "com.larje.zenject",
             "expression": "9.0.0",
             "define": "LARJE_ZENJECT"
         },
