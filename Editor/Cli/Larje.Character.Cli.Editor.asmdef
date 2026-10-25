@@ -1,10 +1,11 @@
 {
-    "name": "Larje.Character.AI.Editor",
-    "rootNamespace": "Larje.Character.Editor.AI",
+    "name": "Larje.Character.Cli.Editor",
+    "rootNamespace": "Larje.Character.Editor.Cli",
     "references": [
         "Larje.Core",
+        "Larje.Core.Cli.Editor",
         "Larje.Character",
-        "Unity.AI.MCP.Editor"
+        "Unity.Pipeline.Attributes"
     ],
     "includePlatforms": ["Editor"],
     "excludePlatforms": [],
@@ -12,12 +13,12 @@
     "overrideReferences": true,
     "precompiledReferences": ["Newtonsoft.Json.dll"],
     "autoReferenced": false,
-    "defineConstraints": ["LARJE_UNITY_AI"],
+    "defineConstraints": ["LARJE_PIPELINE"],
     "versionDefines": [
         {
-            "name": "com.unity.ai.assistant",
-            "expression": "2.0.0-pre.1",
-            "define": "LARJE_UNITY_AI"
+            "name": "com.unity.pipeline",
+            "expression": "0.9.1-exp.1",
+            "define": "LARJE_PIPELINE"
         }
     ],
     "noEngineReferences": false

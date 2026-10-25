@@ -3,7 +3,7 @@ using System.Globalization;
 using UnityEditor;
 using UnityEngine;
 
-namespace Larje.Character.Editor.AI
+namespace Larje.Character.Editor.Cli
 {
     internal static class SerializedValueWriter
     {

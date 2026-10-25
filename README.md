@@ -29,10 +29,12 @@ Create `Larje/Character/Zenject/Character Installer` (`LarjeCharacterInstaller`)
 
 Zenject injects scene components before `Awake`, so `Construct` methods do not depend on `Awake` state.
 
-## Unity AI (MCP) tools
+## Unity CLI commands
 
-| Tool | Purpose |
+With `com.unity.pipeline` in the project, a running editor exposes these commands to the [Unity CLI](https://docs.unity.com/en-us/unity-cli) (`unity command <group> <name>`):
+
+| Command | Purpose |
 |---|---|
-| `Larje.ListAITypes` | List every AI action and decision type with its serialized fields |
-| `Larje.DescribeAIBrain` | Describe an AI brain prefab as JSON: states, actions, transitions |
-| `Larje.EditAIBrain` | Apply a list of edit operations to an AI brain prefab |
+| `larje.ai list_types` | List every AI action and decision type with its serialized fields |
+| `larje.ai describe --prefab <asset>` | Describe an AI brain prefab as JSON: states, actions, transitions |
+| `larje.ai edit --prefab <asset> (--ops '<json array>' \| --file <ops.json>)` | Apply a list of edit operations to an AI brain prefab, saved once |

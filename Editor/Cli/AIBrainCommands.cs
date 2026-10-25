@@ -1,79 +1,98 @@
 using System;
 using System.Collections.Generic;
 using Larje.Character.AI;
-using Unity.AI.MCP.Editor.Helpers;
-using Unity.AI.MCP.Editor.ToolRegistry;
+using Larje.Core.Editor.Cli;
+using Newtonsoft.Json;
+using Unity.Pipeline.Commands;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Larje.Character.Editor.AI
+namespace Larje.Character.Editor.Cli
 {
-    public static class AIBrainTools
+    public static class AIBrainCommands
     {
+        private const string GROUP = "larje.ai";
         private const string LABEL_PROPERTY = "<Label>k__BackingField";
-        private const string LIST_DESCRIPTION = "Lists Larje AI building blocks: every AIAction and AIDecision type with its serialized fields (name and type). Use the type names in Larje.EditAIBrain.";
+        private const string LIST_DESCRIPTION = "Lists Larje AI building blocks: every AIAction and AIDecision type with its serialized fields (name and type). Use the type names in larje.ai edit.";
         private const string DESCRIBE_DESCRIPTION = "Describes a Larje AIBrain prefab (asset path) as JSON: states in order (the first is initial), their actions (type, label, fields) and transitions (decision type, label, fields, true/false target states).";
-        private const string EDIT_DESCRIPTION = "Edits a Larje AIBrain prefab with a list of operations applied in order and saved once. Ops: add_state{State}, remove_state{State}, add_action{State,Type,Label}, add_transition{State,Type,Label,TrueState,FalseState} where Type is an AIDecision type, set_field{Label,Property,Value} sets a serialized field on the action/decision with that label (numbers invariant, vectors '(x,y,z)', enums by name, assets by path).";
+        private const string EDIT_DESCRIPTION = "Edits a Larje AIBrain prefab with a JSON array of operations (inline --ops or a file path --file) applied in order and saved once. Ops: {op:add_state,state}, {op:remove_state,state}, {op:add_action,state,type,label}, {op:add_transition,state,type,label,trueState,falseState} where type is an AIDecision type, {op:set_field,label,property,value} sets a serialized field on the action/decision with that label (numbers invariant, vectors '(x,y,z)', enums by name, assets by path).";
 
-        [McpTool("Larje.ListAITypes", LIST_DESCRIPTION, "List Larje AI Types", EnabledByDefault = true, Groups = new[] { "larje", "larje-assets" })]
+        [CliGroupCommand(GROUP, LIST_DESCRIPTION, Tags = new[] { "larje", "assets" })]
         public static object ListTypes()
         {
-            return Response.Success("AI types", new
+            return new
             {
                 actions = DescribeTypes(TypeCache.GetTypesDerivedFrom<AIAction>()),
                 decisions = DescribeTypes(TypeCache.GetTypesDerivedFrom<AIDecision>())
-            });
+            };
         }
 
-        [McpTool("Larje.DescribeAIBrain", DESCRIBE_DESCRIPTION, "Describe Larje AI Brain", EnabledByDefault = true, Groups = new[] { "larje", "larje-assets" })]
-        public static object Describe(DescribeParams parameters)
+        [CliGroupCommand(GROUP, DESCRIBE_DESCRIPTION, Tags = new[] { "larje", "assets" })]
+        public static object Describe(
+            [CliArg("prefab", "AIBrain prefab asset path", Required = true)] string prefab)
         {
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(parameters.PrefabPath);
-            AIBrain brain = prefab != null ? prefab.GetComponentInChildren<AIBrain>(true) : null;
+            GameObject asset = AssetDatabase.LoadAssetAtPath<GameObject>(prefab);
+            AIBrain brain = asset != null ? asset.GetComponentInChildren<AIBrain>(true) : null;
             if (brain == null)
             {
-                return Response.Error($"No AIBrain prefab at '{parameters.PrefabPath}'");
+                throw new ArgumentException($"No AIBrain prefab at '{prefab}'");
             }
 
-            return Response.Success(brain.name, DescribeBrain(brain));
+            return DescribeBrain(brain);
         }
 
-        [McpTool("Larje.EditAIBrain", EDIT_DESCRIPTION, "Edit Larje AI Brain", EnabledByDefault = true, Groups = new[] { "larje", "larje-assets" })]
-        public static object Edit(EditParams parameters)
+        [CliGroupCommand(GROUP, EDIT_DESCRIPTION, Tags = new[] { "larje", "assets" })]
+        public static object Edit(
+            [CliArg("prefab", "AIBrain prefab asset path", Required = true)] string prefab,
+            [CliArg("ops", "Operations as a JSON array")] string ops = null,
+            [CliArg("file", "Path to a file with the operations JSON array, relative to the project root")] string file = null)
         {
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(parameters.PrefabPath) == null)
+            List<Operation> operations = ParseOperations(CliText.Resolve(ops, file, "ops"));
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(prefab) == null)
             {
-                return Response.Error($"Prefab not found at '{parameters.PrefabPath}'");
+                throw new ArgumentException($"Prefab not found at '{prefab}'");
             }
 
-            GameObject root = PrefabUtility.LoadPrefabContents(parameters.PrefabPath);
+            GameObject root = PrefabUtility.LoadPrefabContents(prefab);
             try
             {
                 AIBrain brain = root.GetComponentInChildren<AIBrain>(true);
                 if (brain == null)
                 {
-                    return Response.Error("Prefab has no AIBrain");
+                    throw new ArgumentException("Prefab has no AIBrain");
                 }
 
-                List<string> log = new List<string>();
-                foreach (Operation operation in parameters.Operations)
+                int applied = 0;
+                foreach (Operation operation in operations)
                 {
                     string error = Apply(brain, operation);
                     if (error != null)
                     {
-                        return Response.Error($"{operation.Op}: {error}", log);
+                        throw new InvalidOperationException($"Operation {applied + 1} ({operation.Op}): {error}. Nothing was saved.");
                     }
 
-                    log.Add($"{operation.Op} ok");
+                    applied++;
                 }
 
-                PrefabUtility.SaveAsPrefabAsset(root, parameters.PrefabPath);
-                return Response.Success($"Applied {log.Count} operations", DescribeBrain(brain));
+                PrefabUtility.SaveAsPrefabAsset(root, prefab);
+                return new { applied, brain = DescribeBrain(brain) };
             }
             finally
             {
                 PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        private static List<Operation> ParseOperations(string json)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<List<Operation>>(json) ?? new List<Operation>();
+            }
+            catch (JsonException exception)
+            {
+                throw new ArgumentException("Invalid operations JSON: " + exception.Message);
             }
         }
 
@@ -297,45 +316,15 @@ namespace Larje.Character.Editor.AI
             return fields;
         }
 
-        public sealed class DescribeParams
-        {
-            [McpDescription("AIBrain prefab asset path", Required = true)]
-            public string PrefabPath { get; set; }
-        }
-
-        public sealed class EditParams
-        {
-            [McpDescription("AIBrain prefab asset path", Required = true)]
-            public string PrefabPath { get; set; }
-
-            [McpDescription("Operations applied in order", Required = true)]
-            public List<Operation> Operations { get; set; }
-        }
-
         public sealed class Operation
         {
-            [McpDescription("add_state | remove_state | add_action | add_transition | set_field", Required = true)]
             public string Op { get; set; }
-
-            [McpDescription("State name")]
             public string State { get; set; }
-
-            [McpDescription("AIAction or AIDecision type name")]
             public string Type { get; set; }
-
-            [McpDescription("Label of the created or targeted action/decision")]
             public string Label { get; set; }
-
-            [McpDescription("Transition target when decision is true")]
             public string TrueState { get; set; }
-
-            [McpDescription("Transition target when decision is false")]
             public string FalseState { get; set; }
-
-            [McpDescription("Serialized field name for set_field")]
             public string Property { get; set; }
-
-            [McpDescription("Value for set_field")]
             public string Value { get; set; }
         }
     }
