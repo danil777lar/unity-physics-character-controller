@@ -23,7 +23,7 @@ Instructions for coding agents working on this package.
 - Do not name variables `value` except in property setters.
 - Make private methods `static` only when a static context requires it.
 - Order members as: constants, static fields, serialized fields, fields, properties, events, methods, nested enums, nested classes. Within each group order by access: public, protected, internal, private.
-- Private fields use `_camelCase`, constants use `UPPER_SNAKE_CASE`.
+- Private non-serialized fields use `_camelCase`, constants use `UPPER_SNAKE_CASE`. `[SerializeField]` fields follow the style already used in the package (mostly `camelCase`); never rename an existing serialized field without `[FormerlySerializedAs]`, because assets and `com.larje.projectsetup` reference fields by name.
 - Serialized fields: never use `[Tooltip]`. Group related fields with `[Header]` and avoid single-field headers.
 
 ## Architecture rules
