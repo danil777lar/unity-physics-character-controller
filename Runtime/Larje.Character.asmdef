@@ -3,6 +3,7 @@
     "rootNamespace": "Larje.Character",
     "references": [
         "Larje.Core",
+        "Larje.UI",
         "UniTask",
         "Unity.InputSystem",
         "Zenject",
@@ -28,6 +29,11 @@
             "name": "com.unity.addressables",
             "expression": "1.21.0",
             "define": "LARJE_ADDRESSABLES"
+        },
+        {
+            "name": "com.larje.ui",
+            "expression": "0.1.0",
+            "define": "LARJE_UI"
         }
     ],
     "noEngineReferences": false

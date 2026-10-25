@@ -1,4 +1,5 @@
-using Larje.Core.UI;
+#if LARJE_UI
+using Larje.UI;
 using UnityEngine;
 
 namespace Larje.Character
@@ -44,3 +45,4 @@ namespace Larje.Character
         }
     }
 }
+#endif
